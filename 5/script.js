@@ -61,7 +61,7 @@
     window.removeEventListener('keydown', escHandler);
     contextmenu.classList.add('contextmenu_hidden');
   }
-
+  styl
   btn.addEventListener('click', () => {
     closeMenu();
     window.scrollTo({
