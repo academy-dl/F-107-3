@@ -1,4 +1,17 @@
 const SERVER_URL = 'https://academy.directlinedev.com';
+const mainLoader = document.querySelector('.main-loader_js');
+let loaderCount = 0;
+const showLoader = () => {
+  loaderCount++;
+  mainLoader.classList.remove('hidden');
+}
+const hiddenLoader = () => {
+  loaderCount--;
+  if(loaderCount <= 0) {
+    mainLoader.classList.add('hidden');
+    loaderCount = 0;
+  }
+}
 const LIMIT = 9;
 
 (function() {
@@ -21,6 +34,7 @@ const LIMIT = 9;
   let xhr = new XMLHttpRequest();
   xhr.open('GET', SERVER_URL + '/api/tags');
   xhr.send();
+  showLoader();
   xhr.onload = () => {
     const tags = JSON.parse(xhr.response).data;
     console.log(tags);
@@ -32,6 +46,7 @@ const LIMIT = 9;
     const params = getParamsFromLocation();
     setDataToFilter(params);
     getData(params);
+    hiddenLoader();
   };
 })();
 
@@ -75,6 +90,7 @@ function setSearchParams(data) {
 }
 
 function getData(params) {
+  const result = document.querySelector('.result_js');
   let xhr = new XMLHttpRequest();
   let searchParams = new URLSearchParams();
   searchParams.set('v', '1.0.0');
@@ -101,6 +117,10 @@ function getData(params) {
 
   xhr.open('GET', SERVER_URL + '/api/posts?' + searchParams.toString());
   xhr.send();
+  showLoader();
+  result.innerHTML = '';
+  const links = document.querySelector('.pagination_js');
+  links.innerHTML = '';
   xhr.onload = () => {
     const response = JSON.parse(xhr.response);
     let dataPosts = '';
@@ -112,17 +132,15 @@ function getData(params) {
         tags: post.tags,
       });
     })
-    const result = document.querySelector('.result_js');
     result.innerHTML = dataPosts;
 
-    const links = document.querySelector('.pagination_js');
-    links.innerHTML = '';
     const pageCount = Math.ceil(response.count / LIMIT);
     for(let i =0; i < pageCount; i++) {
       const link = linkElementCreate(i);
       links.insertAdjacentElement('beforeend', link);
       links.insertAdjacentHTML('beforeend', '<br>');
     }
+    hiddenLoader();
   }
 }
 
@@ -168,4 +186,10 @@ function createTag({id, name, color}) {
     <input name="tags" type="checkbox" class="form-check-input" id="tags-${id}" value="${id}">
     <label style="color: ${color}" class="form-check-label" for="tags-${id}">${name}</label>
   </div>`
+}
+
+function createSpiner(full) {
+  return `<div class="spinner-border ${full ? 'full' : ''}" role="status">
+    <span class="sr-only">Loading...</span>
+  </div>`;
 }
